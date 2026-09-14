@@ -1,0 +1,195 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://Scenes/Coin.tscn" id="2_coin"]
+[ext_resource type="Script" path="res://Scripts/LevelSetup.gd" id="3_setup"]
+[ext_resource type="Script" path="res://Scripts/LevelExit.gd" id="4_exit"]
+[ext_resource type="Script" path="res://Scripts/Hazard.gd" id="5_hazard"]
+[ext_resource type="Script" path="res://Scripts/GameUI.gd" id="6_ui"]
+[ext_resource type="Texture2D" path="res://Assets/Textures/coin.png" id="7_coin_tex"]
+
+[sub_resource type="Environment" id="Environment_level"]
+background_mode = 1
+background_color = Color(0.025, 0.06, 0.11, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.18, 0.31, 0.48, 1)
+ambient_light_energy = 0.9
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 1.1
+fog_enabled = true
+fog_light_color = Color(0.08, 0.16, 0.25, 1)
+fog_density = 0.008
+
+[sub_resource type="BoxMesh" id="FloorMesh"]
+size = Vector3(13, 1, 48)
+[sub_resource type="BoxShape3D" id="FloorShape"]
+size = Vector3(13, 1, 48)
+[sub_resource type="BoxMesh" id="WallMesh"]
+size = Vector3(0.5, 2, 48)
+[sub_resource type="BoxShape3D" id="WallShape"]
+size = Vector3(0.5, 2, 48)
+[sub_resource type="BoxMesh" id="DoorMesh"]
+size = Vector3(3, 4, 0.6)
+[sub_resource type="BoxShape3D" id="DoorShape"]
+size = Vector3(3.4, 4.2, 1.5)
+[sub_resource type="BoxShape3D" id="TrapShape"]
+size = Vector3(4.2, 1.2, 1.2)
+[sub_resource type="CylinderMesh" id="TrapMesh"]
+top_radius = 0.22
+bottom_radius = 0.22
+height = 4.2
+[sub_resource type="StandardMaterial3D" id="FloorMat"]
+albedo_color = Color(0.08, 0.2, 0.32, 1)
+metallic = 0.25
+roughness = 0.55
+[sub_resource type="StandardMaterial3D" id="WallMat"]
+albedo_color = Color(0.11, 0.42, 0.55, 1)
+emission_enabled = true
+emission = Color(0.01, 0.08, 0.12, 1)
+[sub_resource type="StandardMaterial3D" id="TrapMat"]
+albedo_color = Color(1, 0.18, 0.08, 1)
+emission_enabled = true
+emission = Color(0.5, 0.02, 0, 1)
+[sub_resource type="StandardMaterial3D" id="DoorMat"]
+albedo_color = Color(0.12, 0.95, 0.55, 1)
+emission_enabled = true
+emission = Color(0.01, 0.42, 0.12, 1)
+
+[node name="NeonRelay" type="Node3D"]
+script = ExtResource("3_setup")
+collectible_count = 6
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_level")
+[node name="MoonLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -25, 0)
+light_color = Color(0.52, 0.74, 1, 1)
+light_energy = 1.5
+shadow_enabled = true
+[node name="FillLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 5, -11)
+light_color = Color(0.15, 0.65, 1, 1)
+light_energy = 5.0
+omni_range = 23.0
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector3(0, 1.2, 14)
+[node name="SpawnPosition" type="Marker3D" parent="." groups=["Spawn"]]
+position = Vector3(0, 1.2, 14)
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.5, -8)
+mesh = SubResource("FloorMesh")
+material_override = SubResource("FloorMat")
+[node name="FloorBody" type="StaticBody3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorBody"]
+position = Vector3(0, -0.5, -8)
+shape = SubResource("FloorShape")
+[node name="LeftRail" type="MeshInstance3D" parent="."]
+position = Vector3(-6.25, 0.55, -8)
+mesh = SubResource("WallMesh")
+material_override = SubResource("WallMat")
+[node name="RightRail" type="MeshInstance3D" parent="."]
+position = Vector3(6.25, 0.55, -8)
+mesh = SubResource("WallMesh")
+material_override = SubResource("WallMat")
+[node name="LeftRailBody" type="StaticBody3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftRailBody"]
+position = Vector3(-6.25, 0.55, -8)
+shape = SubResource("WallShape")
+[node name="RightRailBody" type="StaticBody3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightRailBody"]
+position = Vector3(6.25, 0.55, -8)
+shape = SubResource("WallShape")
+
+[node name="TrapOne" type="Area3D" parent="."]
+position = Vector3(0, 0.65, 4)
+script = ExtResource("5_hazard")
+[node name="Bar" type="MeshInstance3D" parent="TrapOne"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("TrapMesh")
+material_override = SubResource("TrapMat")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TrapOne"]
+shape = SubResource("TrapShape")
+[node name="TrapTwo" type="Area3D" parent="."]
+position = Vector3(0, 0.65, -10)
+script = ExtResource("5_hazard")
+spin_speed = -4.2
+[node name="Bar" type="MeshInstance3D" parent="TrapTwo"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("TrapMesh")
+material_override = SubResource("TrapMat")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TrapTwo"]
+shape = SubResource("TrapShape")
+
+[node name="Coin1" parent="." instance=ExtResource("2_coin")]
+position = Vector3(-2.5, 1.0, 9)
+[node name="Coin2" parent="." instance=ExtResource("2_coin")]
+position = Vector3(3.4, 1.0, 5.5)
+[node name="Coin3" parent="." instance=ExtResource("2_coin")]
+position = Vector3(-3.3, 1.0, 1)
+[node name="Coin4" parent="." instance=ExtResource("2_coin")]
+position = Vector3(3.2, 1.0, -5)
+[node name="Coin5" parent="." instance=ExtResource("2_coin")]
+position = Vector3(-3.5, 1.0, -14)
+[node name="Coin6" parent="." instance=ExtResource("2_coin")]
+position = Vector3(0, 1.0, -21)
+
+[node name="ExitDoor" type="Area3D" parent="."]
+position = Vector3(0, 2, -28)
+script = ExtResource("4_exit")
+next_scene = "res://Scenes/level_three.tscn"
+[node name="Door" type="MeshInstance3D" parent="ExitDoor"]
+mesh = SubResource("DoorMesh")
+material_override = SubResource("DoorMat")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ExitDoor"]
+shape = SubResource("DoorShape")
+[node name="Label" type="Label3D" parent="ExitDoor"]
+position = Vector3(0, 2.5, 0.4)
+text = "EXIT - COLLECT ALL RELICS"
+font_size = 48
+outline_size = 8
+
+[node name="Canvas" type="CanvasLayer" parent="."]
+[node name="GameUI" type="Control" parent="Canvas"]
+script = ExtResource("6_ui")
+[node name="CoinTexture" type="TextureRect" parent="Canvas/GameUI"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 88.0
+offset_bottom = 88.0
+texture = ExtResource("7_coin_tex")
+expand_mode = 1
+stretch_mode = 4
+[node name="CoinsLabel" type="Label" parent="Canvas/GameUI"]
+offset_left = 96.0
+offset_top = 34.0
+offset_right = 260.0
+offset_bottom = 82.0
+theme_override_font_sizes/font_size = 34
+text = "x 0 / 6"
+[node name="Instructions" type="Label" parent="Canvas/GameUI"]
+offset_left = 24.0
+offset_top = 100.0
+offset_right = 540.0
+offset_bottom = 140.0
+theme_override_colors/font_color = Color(0.55, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "NEON RELAY: collect all relics, avoid red sweepers, then enter the green exit"
+
+[node name="Completion" type="ColorRect" parent="Canvas"]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0.01, 0.04, 0.08, 0.88)
+mouse_filter = 2
+[node name="Message" type="Label" parent="Canvas/Completion"]
+offset_left = 250.0
+offset_top = 250.0
+offset_right = 900.0
+offset_bottom = 370.0
+theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 44
+text = "NEON RELAY COMPLETE!"
+horizontal_alignment = 1
